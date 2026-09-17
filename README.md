@@ -23,7 +23,7 @@ register.
 ## Usage
 
 ```bash
-git clone https://github.com/<your-username>/omarchy-z13-setup.git
+git clone https://github.com/mkhan117/omarchy-z13-setup.git
 cd omarchy-z13-setup
 ./install.sh
 ```
