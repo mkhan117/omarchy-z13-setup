@@ -8,7 +8,7 @@ hardware:
 
 - **[Cliffback/omarchy-rog-z13-setup](https://github.com/Cliffback/omarchy-rog-z13-setup)**
   — the phased, idempotent `install.sh` installer (kernel/drivers, firmware,
-  Thunderbolt, hibernate, gaming tools, 3D-printing/UE app scaling fixes, etc.)
+  Thunderbolt, hibernate, gaming tools, etc.)
 - **[Naomarik/Z13-StrixHalo-Omarchy](https://github.com/Naomarik/Z13-StrixHalo-Omarchy)**
   — the Hyprland/Waybar/EasyEffects dotfiles and **Performance Plus**, a far
   more battle-tested `ryzenadj`-based power management system.
@@ -89,7 +89,7 @@ ASUS-specific fan-curve and platform-profile patches.
 
 ## What it does
 
-The script runs eighteen phases in order:
+The script runs thirteen phases in order:
 
 **Phase 0 - System update**
 
@@ -197,23 +197,6 @@ Adds a kernel parameter (via `limine-entry-tool`) to ignore AMD GPIO
 controller interrupt pins 2/3, preventing spurious hibernate wakes on
 Ryzen 7000+/Strix Halo. Requires a reboot.
 
-**Phase 14-16 - Slicer DPI scaling (optional)**
-
-Lychee Slicer, Orca Bambu Studio, and Bambu Studio all render oversized on
-Wayland; each phase installs the app from the AUR with a launcher wrapper
-that corrects the scale factor.
-
-**Phase 17 - Unreal Engine 5 (optional)**
-
-Installs UE5 binary releases with Wayland/X11 fixes, HiDPI scaling, and
-bidirectional Neovim integration (open a C++ class in UE → opens in nvim;
-`:UnrealEngine open` from nvim → launches UE). See
-[docs/unreal-engine-neovim-integration.md](docs/unreal-engine-neovim-integration.md).
-
-**Phase 18 - Perforce (optional)**
-
-Installs `p4` and `p4v`. See [docs/perforce-setup.md](docs/perforce-setup.md).
-
 ## Custom Hyprland keybindings
 
 Phase 4 adds Z13-specific keybindings on top of Omarchy/z13flow's defaults —
@@ -241,11 +224,6 @@ lib/
   phase11_controller_gaming.sh Controller gaming mode trigger
   phase12_audio_routing.sh     Audio sink priority routing
   phase13_hibernate_wake.sh    Hibernate wake fix (GPIO workaround)
-  phase14_lychee_scaling.sh    Lychee Slicer DPI scaling fix
-  phase15_orca_scaling.sh      Orca Bambu Studio DPI scaling fix
-  phase16_bambu_scaling.sh     Bambu Studio DPI scaling fix
-  phase17_unreal_engine.sh     Unreal Engine 5 installer + Neovim integration
-  phase18_perforce.sh          Perforce (p4 + p4v) installer
 dotfiles/
   hypr/                    Hyprland config deployed wholesale in Phase 4
   waybar/                  Waybar config + scripts deployed wholesale in Phase 4
@@ -265,20 +243,11 @@ templates/
   controller-gaming-trigger.service  Systemd user service for Phase 11
   hibernate-wake-fix.sh    Standalone hibernate wake fix script
   patch-heroic-gamescope.sh    Heroic Gamescope compatibility patch
-  unreal-engine/
-    nvim-wrapper.sh        Smart nvim wrapper for UE integration
-    fake_dpi.c             HiDPI interceptor for UE on HiDPI displays
-    *.png                  Application icons
-    unreal-engine.xml      MIME type for .uproject files
 scripts/
   gaming-mode-install.sh   Gaming Mode (Gamescope session handoff) installer for Phase 6
   fix-webcam.sh            Standalone webcam suspend/resume fix — see docs/z13flow/webcam.md
-  install-unreal-engine.sh    Standalone UE5 binary installer
-  setup-ue-neovim.sh          Neovim/LazyVim UE integration setup
 docs/
   rog-keys.md              Keybindings and Performance Plus profile reference
-  unreal-engine-neovim-integration.md  Full UE+nvim integration guide
-  perforce-setup.md         Perforce setup guide
   z13flow/                  Docs carried over from Naomarik/Z13-StrixHalo-Omarchy
     performance-plus.md     Full Performance Plus design + tuning rationale
     bluetooth.md             MT7925 boot workaround
