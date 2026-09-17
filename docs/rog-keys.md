@@ -1,4 +1,4 @@
-# ROG Flow Z13 — Key Mapping & Power Profiles
+# ASUS ROG Flow Z13 (2025) — Key Mapping & Power Profiles
 
 ## Physical Keys
 

@@ -1,6 +1,6 @@
 # Performance Plus (Ultra) — Power Management System
 
-Custom power management layer for the ASUS Zenbook Z13 (Strix Halo / gfx1151).
+Custom power management layer for the ASUS ROG Flow Z13 (2025, Strix Halo / gfx1151).
 Adds an **Ultra** mode on top of `power-profiles-daemon` that applies ryzenadj
 overclocking settings and survives suspend/resume cycles.
 

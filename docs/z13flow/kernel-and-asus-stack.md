@@ -1,7 +1,7 @@
 # Kernel & ASUS Hardware Stack
 
 Everything needed to get fan control, platform profiles, and hardware tuning
-working on the ASUS Zenbook Z13 (Strix Halo) under Arch Linux.
+working on the ASUS ROG Flow Z13 (2025, Strix Halo) under Arch Linux.
 
 ---
 

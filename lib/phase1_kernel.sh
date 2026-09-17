@@ -9,7 +9,8 @@
 phase1_check() {
     file_contains /etc/pacman.conf "[g14]" \
         && is_pkg_installed linux-g14 \
-        && is_pkg_installed asusctl
+        && is_pkg_installed asusctl \
+        && is_pkg_installed rog-control-center
 }
 
 phase1_run() {
@@ -53,7 +54,7 @@ phase1_run() {
     fi
 
     # 3. Install ASUS tools if not present
-    if ! is_pkg_installed asusctl; then
+    if ! is_pkg_installed asusctl || ! is_pkg_installed rog-control-center; then
         info "Installing asusctl and rog-control-center..."
         run_sudo pacman -S --noconfirm asusctl rog-control-center
         made_changes=true
