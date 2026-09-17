@@ -11,12 +11,72 @@
 
 ## Keyboard Shortcuts
 
+Custom shortcuts added by this repo's `dotfiles/hypr/bindings.conf` (Phase 4),
+on top of Omarchy's own defaults. For window tiling / focus / hy3 group
+keybindings, see [docs/z13flow/hy3.md](z13flow/hy3.md) instead.
+
 | Shortcut | Action |
 |----------|--------|
 | Click the Waybar power-profile module | Cycle Quiet → Balanced → Performance → Ultra (Performance Plus) |
-| `Super+Shift+S` | Screenshot |
+| `Super+Shift+S` | Screenshot (firmware Fn+F6 also sends this) |
 | `Super+Shift+R` | ROG Control Center |
-| `Super+V` | Virtual keyboard (tablet mode) |
+| `Super+V` | Toggle virtual keyboard (tablet mode) |
+
+### Apps & launching
+
+| Shortcut | Action |
+|----------|--------|
+| `Super+Alt+Return` | Terminal, opened as a tmux session |
+| `Super+Shift+Return` | Browser |
+| `Super+Shift+B` | Browser, new blank window |
+| `Super+Shift+Alt+B` | Browser, private window |
+| `Alt+Shift+XF86TouchpadOff` (Copilot key) | Wayscriber |
+
+### Window & workspace
+
+| Shortcut | Action |
+|----------|--------|
+| `Super+Shift+Space` | Toggle window mode: tile / float / sticky |
+| `Super+F` | Toggle fullscreen |
+| `Super+Shift+F` | Toggle Waybar (top bar) |
+| `Super+Equal` / `Super+Minus` | Grow / shrink active window |
+| `Super+F2` | Rename current workspace (empty input reverts to number) |
+| `Super+F3` | Swap current workspace's position |
+| `XF86Launch3` (side button) | Toggle monitor mode (Double/External) — outside gaming mode |
+
+### Screenshots & recording
+
+| Shortcut | Action |
+|----------|--------|
+| `Alt+Shift+S` | Screenshot |
+| `Alt+Shift+Ctrl+S` | Screen recording |
+
+### Zoom (accessibility)
+
+| Shortcut | Action |
+|----------|--------|
+| `Super+Alt+Equal` / `Super+Ctrl+W` | Zoom in (+0.5 / +1.0 step) |
+| `Super+Alt+Minus` / `Super+Ctrl+S` | Zoom out (-0.5 / -1.0 step) |
+| `Super+Alt+0` / `Super+Ctrl+F` | Reset zoom |
+
+### Voice & brightness/volume
+
+| Shortcut | Action |
+|----------|--------|
+| `Super+D` | Toggle voice dictation |
+| `Super+Up` / `Super+Down` | Increase / decrease brightness |
+| `Super+Ctrl+Up` / `Super+Ctrl+Down` | Increase / decrease volume |
+| `XF86KbdLightOnOff` (Fn+F11) | Cycle keyboard backlight |
+
+### Gaming
+
+| Shortcut | Action |
+|----------|--------|
+| `Super+Shift+F5` | Enter Gaming Mode (Gamescope/Steam session handoff) |
+| `Super+F5` | Steam Big Picture — 2560×1600 @ 180Hz |
+| `Super+F6` | Steam Big Picture — 2560×1440 @ 239.96Hz |
+| `Super+F7` | Steam Big Picture — 3840×2160 @ 60Hz |
+| `Super+Shift+Delete` | Toggle LSFG (frame gen) config overlay |
 
 ## Power Profiles (Performance Plus)
 
