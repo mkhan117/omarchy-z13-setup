@@ -12,6 +12,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=1
 
 # Source all phases
+source "$SCRIPT_DIR/lib/phase_migrate.sh"
 source "$SCRIPT_DIR/lib/phase0_update.sh"
 source "$SCRIPT_DIR/lib/phase1_kernel.sh"
 source "$SCRIPT_DIR/lib/phase2_asusd.sh"
@@ -77,6 +78,9 @@ run_phase() {
         return 1
     fi
 }
+
+# Migration from a previous install of the pre-merge omarchy-rog-z13-setup
+run_phase "M" "Migrate from Previous Install (cleanup)" migrate_check migrate_run || true
 
 # Phases 0–1 (may require reboot)
 run_phase 0 "System Update"   phase0_check phase0_run || true

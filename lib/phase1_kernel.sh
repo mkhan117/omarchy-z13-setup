@@ -15,6 +15,21 @@ phase1_check() {
 phase1_run() {
     local made_changes=false
 
+    # If a previous install of the pre-merge script put linux-cachyos on this
+    # machine, it's left in place (removing the currently-booted kernel here
+    # would be destructive) — but it's installed *alongside* linux-g14 below,
+    # not switched. You'll need to boot into linux-g14 explicitly for the
+    # kernel Performance Plus was validated against.
+    if is_pkg_installed linux-cachyos; then
+        warn "linux-cachyos is installed (from a previous install of the pre-merge script)."
+        warn "This repo installs linux-g14 alongside it rather than removing it — pick"
+        warn "linux-g14 from your bootloader menu after rebooting. Performance Plus (phase 5)"
+        warn "was tuned and tested against linux-g14, not linux-cachyos."
+        if [[ "$(uname -r)" == *cachyos* ]]; then
+            warn "You are currently BOOTED into linux-cachyos ($(uname -r))."
+        fi
+    fi
+
     # 1. Add G14 repo if not present
     if ! file_contains /etc/pacman.conf "[g14]"; then
         info "Adding G14 repository..."

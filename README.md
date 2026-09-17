@@ -42,6 +42,29 @@ script after rebooting to continue with the remaining phases.
 
 All prompts auto-answer yes and commands are printed instead of executed.
 
+### Already ran the old (pre-merge) omarchy-rog-z13-setup script?
+
+The very first thing `install.sh` runs is a migration step that detects and
+removes artifacts from a previous install of the standalone
+Cliffback/omarchy-rog-z13-setup script — specifically its debounced,
+AC-triggered `power-profiles-daemon` udev rule and its raw-sysfs
+`rog-quick.sh` TDP menu, both of which would otherwise fight with Performance
+Plus (phase 5) over the same profile/power-limit state. It's safe to run
+even if you never had the old script installed (it's a no-op in that case).
+
+Phase 1 will also warn if `linux-cachyos` is already installed on your
+machine: it installs `linux-g14` alongside it rather than removing your
+current kernel, so after rebooting you'll need to pick `linux-g14` from your
+bootloader menu — Performance Plus was tuned and tested against it, not
+CachyOS's kernel.
+
+If you'd previously run the old script's Phase 6 (Gamescope via SDDM session
+switching), its `gamescope-session-steam-nm.desktop` SDDM entry and pacman
+hook are left in place — they don't conflict with anything here, but they're
+superseded by this repo's Gaming Mode (phase 6, `Super+Shift+F5` session
+handoff) and can be removed manually if you don't want the extra SDDM login
+option.
+
 ## Why one power system
 
 Both source repos independently discovered that this hardware's SMU mailbox
@@ -203,6 +226,7 @@ profile / Performance Plus breakdown.
 install.sh                Main entry point
 lib/
   common.sh               Shared utilities (logging, prompts, checks, dry-run wrappers)
+  phase_migrate.sh         Cleans up artifacts from a previous pre-merge-script install
   phase0_update.sh         System update
   phase1_kernel.sh         G14 repo, linux-g14 kernel, ASUS tools
   phase2_asusd.sh          asusd service fix
