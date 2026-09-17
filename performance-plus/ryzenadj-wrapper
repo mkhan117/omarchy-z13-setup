@@ -1,0 +1,223 @@
+#!/bin/bash
+#
+# ~/.local/bin/ryzenadj — global throttling wrapper
+#
+# Sits in front of /usr/bin/ryzenadj and enforces a single shared lock
+# across ALL callers (waybar status, sleep hook, AC hook, profile toggle,
+# etc.) Calling the real ryzenadj too rapidly hangs the ryzen_smu SMU
+# mailbox — see docs/performance-plus.md for the full explanation.
+#
+# Behaviour:
+#   -i (read/info)  → return cached output immediately if locked; never queue
+#   everything else → run immediately when idle; otherwise queue the latest
+#                     args and run them once after the cooldown
+#
+# Test without touching hardware:
+#   RYZENADJ_RUNDIR=$(mktemp -d) RYZENADJ_THROTTLE_COOLDOWN=1 ryzenadj --throttle-test echo value
+#
+
+REAL=/usr/bin/ryzenadj
+RUNDIR=${RYZENADJ_RUNDIR:-/run/ryzenadj}
+LOCKFILE=$RUNDIR/lock
+TIMESTAMP=$RUNDIR/last
+CACHE=$RUNDIR/cache
+PENDING=$RUNDIR/pending
+RETRY_LOCK=$RUNDIR/retry
+COOLDOWN=${RYZENADJ_THROTTLE_COOLDOWN:-3}
+
+ensure_rw_file() {
+    local path=$1
+
+    if [[ -e "$path" && ! -w "$path" ]]; then
+        rm -f "$path" 2>/dev/null || true
+    fi
+
+    if [[ ! -e "$path" ]]; then
+        : > "$path" 2>/dev/null || true
+    fi
+
+    chmod 0666 "$path" 2>/dev/null || true
+}
+
+format_mw_limit() {
+    local raw=$1
+    printf '%d.%03d' "$(( raw / 1000 ))" "$(( raw % 1000 ))"
+}
+
+format_plain_limit() {
+    local raw=$1
+    printf '%d.000' "$raw"
+}
+
+update_cached_limits() {
+    local stapm_limit=""
+    local fast_limit=""
+    local slow_limit=""
+    local apu_slow_limit=""
+    local tctl_temp=""
+    local arg
+    local tmp_cache
+
+    [[ -f "$CACHE" ]] || return 0
+
+    for arg in "$@"; do
+        case "$arg" in
+            --stapm-limit=*) stapm_limit=$(format_mw_limit "${arg#*=}") ;;
+            --fast-limit=*) fast_limit=$(format_mw_limit "${arg#*=}") ;;
+            --slow-limit=*) slow_limit=$(format_mw_limit "${arg#*=}") ;;
+            --apu-slow-limit=*) apu_slow_limit=$(format_mw_limit "${arg#*=}") ;;
+            --tctl-temp=*) tctl_temp=$(format_plain_limit "${arg#*=}") ;;
+        esac
+    done
+
+    [[ -n "$stapm_limit$fast_limit$slow_limit$apu_slow_limit$tctl_temp" ]] || return 0
+
+    tmp_cache="${CACHE}.tmp.$$"
+    awk -F'|' \
+        -v stapm_limit="$stapm_limit" \
+        -v fast_limit="$fast_limit" \
+        -v slow_limit="$slow_limit" \
+        -v apu_slow_limit="$apu_slow_limit" \
+        -v tctl_temp="$tctl_temp" '
+        BEGIN { OFS = "|" }
+
+        function trim(value) {
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+            return value
+        }
+
+        function format_field(value) {
+            return sprintf(" %10s ", value)
+        }
+
+        /^\|/ {
+            name = trim($2)
+
+            if (name == "STAPM LIMIT" && stapm_limit != "") {
+                $3 = format_field(stapm_limit)
+            } else if (name == "PPT LIMIT FAST" && fast_limit != "") {
+                $3 = format_field(fast_limit)
+            } else if (name == "PPT LIMIT SLOW" && slow_limit != "") {
+                $3 = format_field(slow_limit)
+            } else if (name == "PPT LIMIT APU" && apu_slow_limit != "") {
+                $3 = format_field(apu_slow_limit)
+            } else if (name == "THM LIMIT CORE" && tctl_temp != "") {
+                $3 = format_field(tctl_temp)
+            } else if ((name == "STT LIMIT APU" || name == "STT LIMIT dGPU") && tctl_temp != "") {
+                $3 = format_field(tctl_temp)
+            }
+
+            print $1, $2, $3, $4
+            next
+        }
+
+        { print }
+    ' "$CACHE" > "$tmp_cache" && mv "$tmp_cache" "$CACHE"
+}
+
+queue_latest() {
+    local tmp_pending="${PENDING}.tmp.$$"
+    printf '%s\0' "$@" > "$tmp_pending" && mv "$tmp_pending" "$PENDING"
+    chmod 0666 "$PENDING" 2>/dev/null || true
+}
+
+start_retry_worker() {
+    local delay=$1
+
+    exec 8>"$RETRY_LOCK"
+    if ! flock --nonblock 8; then
+        return 0
+    fi
+
+    (
+        local -a args
+
+        sleep "$delay"
+        if [[ -s "$PENDING" ]]; then
+            mapfile -d '' -t args < "$PENDING"
+            : > "$PENDING"
+            throttle_latest "${args[@]}"
+        fi
+        flock --unlock 8
+    ) &
+}
+
+throttle_latest() {
+    local -a command=("$@")
+    local last=0
+    local now
+    local elapsed
+    local remaining
+    local status
+
+    if [[ ${#command[@]} -eq 0 ]]; then
+        echo "ryzenadj: throttle_latest requires a command" >&2
+        return 2
+    fi
+
+    if [[ -s "$TIMESTAMP" ]]; then
+        read -r last < "$TIMESTAMP" || last=0
+    fi
+
+    now=$(date +%s)
+    elapsed=$(( now - last ))
+    if (( elapsed < COOLDOWN )); then
+        remaining=$(( COOLDOWN - elapsed ))
+        echo "ryzenadj: cooldown active, queuing for retry in ${remaining}s" >&2
+        queue_latest "${command[@]}"
+        start_retry_worker "$remaining"
+        return 0
+    fi
+
+    exec 9>"$LOCKFILE"
+    if ! flock --nonblock 9; then
+        echo "ryzenadj: locked, queuing" >&2
+        queue_latest "${command[@]}"
+        start_retry_worker "$COOLDOWN"
+        return 0
+    fi
+
+    : > "$PENDING"
+    date +%s > "$TIMESTAMP"
+    "${command[@]}"
+    status=$?
+    flock --unlock 9
+    return "$status"
+}
+
+mkdir -p "$RUNDIR" && chmod 0777 "$RUNDIR" 2>/dev/null || true
+ensure_rw_file "$LOCKFILE"
+ensure_rw_file "$CACHE"
+ensure_rw_file "$PENDING"
+ensure_rw_file "$TIMESTAMP"
+ensure_rw_file "$RETRY_LOCK"
+
+if [[ ${1-} == "--throttle-test" ]]; then
+    shift
+    throttle_latest "$@"
+    exit $?
+fi
+
+if [[ $# -eq 1 && "$1" == "-i" ]]; then
+    exec 9>"$LOCKFILE"
+    if flock --nonblock 9; then
+        OUTPUT=$(sudo "$REAL" -i 2>&1)
+        STATUS=$?
+        echo "$OUTPUT" > "$CACHE"
+        flock --unlock 9
+        echo "$OUTPUT"
+        exit $STATUS
+    fi
+
+    if [[ -f "$CACHE" ]]; then
+        cat "$CACHE"
+        exit 0
+    fi
+
+    echo "ryzenadj: locked, no cache yet" >&2
+    exit 1
+fi
+
+update_cached_limits "$@"
+throttle_latest sudo "$REAL" "$@"
+exit $?

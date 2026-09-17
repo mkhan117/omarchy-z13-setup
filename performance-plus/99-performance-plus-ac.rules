@@ -1,0 +1,5 @@
+# Re-applies Performance Plus (Ultra) ryzenadj settings when AC power is
+# plugged in. power-profiles-daemon re-applies its own stock PPT limits on
+# power source changes, overwriting Ultra's ryzenadj overrides — this rule
+# triggers a hook that puts them back.
+SUBSYSTEM=="power_supply", KERNEL=="AC0", ATTR{online}=="1", RUN+="/usr/lib/performance-plus/ac-hook"

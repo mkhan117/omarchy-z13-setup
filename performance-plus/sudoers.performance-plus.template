@@ -1,0 +1,7 @@
+# Performance Plus — allow __USER__ to call the ryzenadj wrapper and manage
+# Ultra state without a password prompt (the toggle script and hooks run
+# from Waybar clicks, systemd-sleep, and udev, none of which can type one).
+__USER__ ALL=(root) NOPASSWD: /usr/bin/ryzenadj
+__USER__ ALL=(root) NOPASSWD: /bin/mkdir -p /var/lib/performance-plus
+__USER__ ALL=(root) NOPASSWD: /bin/touch /var/lib/performance-plus/active
+__USER__ ALL=(root) NOPASSWD: /bin/rm -f /var/lib/performance-plus/active

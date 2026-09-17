@@ -1,0 +1,13 @@
+[Unit]
+Description=Controller gaming mode trigger (Guide/PS + Start combo)
+Documentation=https://github.com/cliffback/omarchy-rog-z13-setup
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/controller-gaming-trigger
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
