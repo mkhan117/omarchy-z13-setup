@@ -32,7 +32,7 @@ phase4_check() {
         && [[ -x "$SYSTEM_SLEEP_HOOK" ]] \
         && [[ -x "$BAR_SCRIPTS_DIR/cpu-status.sh" ]] \
         && [[ -f "$SHELL_JSON" ]] \
-        && jq -e '.bar.layout.right[]? | select(.id == "cpu")' "$SHELL_JSON" >/dev/null 2>&1
+        && jq -e '.bar.layout.left[]? | select(.id == "cpu")' "$SHELL_JSON" >/dev/null 2>&1
 }
 
 phase4_run() {
@@ -115,11 +115,17 @@ phase4_run() {
                 {id: "dictation", type: "command", exec: ($dir + "/dictation-status.sh"), interval: 2, onClick: "~/.config/hypr/scripts/dictate.sh"}
             ]')
 
+        # Placed in the LEFT section, not right: the bar's center content
+        # (clock etc.) is anchored to the true horizontal center of the
+        # whole bar and doesn't shrink to make room, so adding this many
+        # widgets to the right section overlaps the clock. Left has plenty
+        # of free space (just the menu + workspaces by default).
         local tmpfile
         tmpfile=$(mktemp)
         jq --argjson new "$new_widgets" --argjson ids "$managed_ids" '
-            .bar //= {} | .bar.layout //= {} | .bar.layout.right //= [] |
-            .bar.layout.right = ($new + [.bar.layout.right[] | select(.id as $i | ($ids | index($i)) | not)])
+            .bar //= {} | .bar.layout //= {} | .bar.layout.left //= [] | .bar.layout.right //= [] |
+            .bar.layout.left = ([.bar.layout.left[] | select(.id as $i | ($ids | index($i)) | not)] + $new) |
+            .bar.layout.right = [.bar.layout.right[] | select(.id as $i | ($ids | index($i)) | not)]
         ' "$SHELL_JSON" > "$tmpfile" && mv "$tmpfile" "$SHELL_JSON"
     fi
     success "System-stats bar widgets installed."
