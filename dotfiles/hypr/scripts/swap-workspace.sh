@@ -66,33 +66,48 @@ current_windows=$(hyprctl clients -j | jq -r ".[] | select(.workspace.id == $cur
 # Get windows from target workspace
 target_windows=$(hyprctl clients -j | jq -r ".[] | select(.workspace.id == $target_id) | .address")
 
+# hl.dsp.window.move() acts on the currently focused window, and hl.dsp.focus
+# can only find a window by address on the workspace that's currently visible
+# (no more movetoworkspacesilent workspace,address:X in one shot) - so each
+# move briefly flips the visible workspace to the window's source workspace,
+# focuses it there, then moves it with follow=false.
+move_window() {
+  local addr="$1" from_ws="$2" to_ws="$3"
+  hyprctl dispatch "hl.dsp.focus({workspace = '$from_ws'})" >/dev/null
+  hyprctl dispatch "hl.dsp.focus({window = '$addr'})" >/dev/null
+  hyprctl dispatch "hl.dsp.window.move({workspace = '$to_ws', follow = false})" >/dev/null
+}
+
 # Move current workspace windows to temp
 for addr in $current_windows; do
-  hyprctl dispatch movetoworkspacesilent "$temp_ws,address:$addr"
+  move_window "$addr" "$current_id" "$temp_ws"
 done
 
 # Move target workspace windows to current position
 for addr in $target_windows; do
-  hyprctl dispatch movetoworkspacesilent "$current_id,address:$addr"
+  move_window "$addr" "$target_id" "$current_id"
 done
 
 # Move temp windows to target position
 for addr in $current_windows; do
-  hyprctl dispatch movetoworkspacesilent "$target_id,address:$addr"
+  move_window "$addr" "$temp_ws" "$target_id"
 done
 
 # Swap the names - apply current's name to target position and vice versa
+esc_current_display=${current_display//\'/\\\'}
+esc_target_display=${target_display//\'/\\\'}
+
 if [[ -n "$current_display" ]]; then
-  hyprctl dispatch renameworkspace "$target_id" "$target_id:$current_display"
+  hyprctl dispatch "hl.dsp.workspace.rename({workspace = $target_id, name = '$target_id:$esc_current_display'})"
 else
-  hyprctl dispatch renameworkspace "$target_id" "$target_id"
+  hyprctl dispatch "hl.dsp.workspace.rename({workspace = $target_id, name = '$target_id'})"
 fi
 
 if [[ -n "$target_display" ]]; then
-  hyprctl dispatch renameworkspace "$current_id" "$current_id:$target_display"
+  hyprctl dispatch "hl.dsp.workspace.rename({workspace = $current_id, name = '$current_id:$esc_target_display'})"
 else
-  hyprctl dispatch renameworkspace "$current_id" "$current_id"
+  hyprctl dispatch "hl.dsp.workspace.rename({workspace = $current_id, name = '$current_id'})"
 fi
 
 # Switch to the target workspace (where our original windows now are)
-hyprctl dispatch workspace "$target_id"
+hyprctl dispatch "hl.dsp.focus({workspace = '$target_id'})"

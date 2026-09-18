@@ -115,6 +115,24 @@ asusctl profile get
 
 ## Known Issues
 
+### `hyprctl dispatch`/`hyprctl keyword` classic syntax is gone
+
+This Hyprland build (0.56.2, Omarchy 4.0.4's Lua config provider) rejects the
+old `hyprctl dispatch <word> <args>` and `hyprctl keyword <opt> <val>` CLI
+syntax outright — `keyword` errors with "can't work with non-legacy parsers.
+Use eval." and `dispatch` demands a Lua-call expression instead (e.g.
+`hyprctl dispatch 'hl.dsp.window.close()'`, `hyprctl eval 'hl.config({cursor
+= {zoom_factor = 1.0}})'`). Any script that shells out to `hyprctl` for a
+window/workspace action must use this syntax now — see
+`scripts/toggle-window-mode.sh`, `scripts/rename-workspace.sh`,
+`scripts/swap-workspace.sh`, `scripts/zoom.sh`, and `hypridle.conf`'s `dpms`
+calls for examples. `/usr/share/hypr/stubs/hl.meta.lua` has the Lua API's
+type stubs if you need to find a dispatcher's field names. Note
+`hl.dsp.focus({window = addr})` only finds a window on the *currently
+visible* workspace — there's no more one-shot `movetoworkspacesilent
+workspace,address:X`, so moving a specific window to/from a hidden
+workspace now requires switching the view to that workspace first.
+
 ### Keyboard backlight not persisting across reboots
 
 The Z13 has two USB aura devices (`0b05:1a30` keyboard, `0b05:18c6` N-KEY) that

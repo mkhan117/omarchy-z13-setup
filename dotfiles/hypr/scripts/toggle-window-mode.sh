@@ -8,12 +8,12 @@ is_pinned=$(echo "$window_info" | jq -r '.pinned')
 
 if [ "$is_floating" = "false" ]; then
     # Currently tiling -> make floating
-    hyprctl dispatch togglefloating
+    hyprctl dispatch 'hl.dsp.window.float({action = "toggle"})'
 elif [ "$is_pinned" = "false" ]; then
     # Currently floating (not sticky) -> make sticky
-    hyprctl dispatch pin
+    hyprctl dispatch 'hl.dsp.window.pin()'
 else
     # Currently sticky -> back to tiling
-    hyprctl dispatch pin  # unpin first
-    hyprctl dispatch togglefloating  # then tile
+    hyprctl dispatch 'hl.dsp.window.pin()'  # unpin first
+    hyprctl dispatch 'hl.dsp.window.float({action = "toggle"})'  # then tile
 fi
