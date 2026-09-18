@@ -276,8 +276,6 @@ docs/
     pacman-build-config.md    makepkg/pacman build performance tuning
     swayosd.md                 SwayOSD crash fix
     easyeffects-mic-setup.md  Mic preset validation
-patches/
-  fix-kbd-backlight-resume.sh
 utils/
   fix-gtk-dark-mode.sh
 ```
