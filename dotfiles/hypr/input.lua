@@ -3,8 +3,11 @@
 hl.config({
   input = {
     kb_layout = "us",
-    -- Original: ctrl:nocaps - changed to caps:ctrl_modifier for better modifier combo support
-    kb_options = "caps:ctrl_modifier,altwin:swap_alt_win",
+    -- Original: ctrl:nocaps - changed to caps:ctrl_modifier for better modifier combo support.
+    -- altwin:swap_alt_win removed: it swapped Alt and Super at the XKB level, so the
+    -- physical Super key sent Alt and vice versa, silently breaking every SUPER-based
+    -- keybind in this repo and Omarchy's own defaults.
+    kb_options = "caps:ctrl_modifier",
 
     repeat_rate = 80,
     repeat_delay = 175,
