@@ -1,25 +1,31 @@
 #!/bin/bash
-# Phase 4: Desktop Dotfiles (Hyprland, Waybar, EasyEffects)
+# Phase 4: Desktop Dotfiles (Hyprland, EasyEffects)
 #
-# Deploys dotfiles/{hypr,waybar,easyeffects} — Z13-tuned Hyprland config
-# (hy3 tiling, tablet/stylus mapping, brightness/kbd-backlight scripts),
-# Waybar modules (including the Performance Plus power-profile/power-draw
-# modules wired up in phase5), and EasyEffects speaker/headphone/mic presets.
+# Deploys dotfiles/{hypr,easyeffects} — Z13-tuned Hyprland config (dwindle
+# tiling, tablet/stylus mapping, brightness/kbd-backlight scripts) as Lua
+# modules under Omarchy's `require("hypr.*")` config system, and EasyEffects
+# speaker/headphone/mic presets. The Performance Plus power-profile bar
+# widget is deployed by phase 5, not here.
 #
-# This REPLACES ~/.config/hypr/* and ~/.config/waybar/* wholesale (matching
-# upstream z13flow's own install method), backing up any existing config
-# first. If you've hand-edited your Hyprland/Waybar config, check the backup
-# after running this.
+# This REPLACES ~/.config/hypr/* wholesale, backing up any existing config
+# first (this also protects Omarchy's own ~/.config/hypr/hyprland.lua and
+# friends, which this repo never overwrites — only bindings.lua/input.lua/
+# looknfeel.lua/monitors.lua/autostart.lua, the files Omarchy's hyprland.lua
+# `require()`s). If you've hand-edited your Hyprland config, check the
+# backup after running this.
+#
+# NOTE: this repo targets Omarchy 4.0.4+, which replaced both raw
+# hyprland.conf sourcing (now Lua modules) and Waybar (now its own
+# Quickshell-based bar). There is no hy3 support here either — hy3 isn't
+# installed on 4.0.4 (hyprpm is gone), so tiling binds target dwindle.
 
 HYPR_DIR="$HOME/.config/hypr"
-WAYBAR_DIR="$HOME/.config/waybar"
 EASYEFFECTS_DIR="$HOME/.local/share/easyeffects"
 NOTIFY_SCRIPT="$HOME/.local/bin/rog-profile-notify.sh"
 SYSTEM_SLEEP_HOOK="/usr/lib/systemd/system-sleep/99-asus-z13-touchpad-reset"
 
 phase4_check() {
-    file_contains "$HYPR_DIR/bindings.conf" "wvkbd-deskintl" \
-        && [[ -f "$WAYBAR_DIR/scripts/power-profile-toggle.sh" ]] \
+    file_contains "$HYPR_DIR/bindings.lua" "wvkbd-deskintl" \
         && [[ -x "$NOTIFY_SCRIPT" ]] \
         && [[ -x "$SYSTEM_SLEEP_HOOK" ]]
 }
@@ -27,22 +33,20 @@ phase4_check() {
 phase4_run() {
     local backup_dir="$HOME/.config/z13-setup-backup.$(date +%s)"
 
-    info "Deploying Hyprland + Waybar + EasyEffects dotfiles..."
+    info "Deploying Hyprland + EasyEffects dotfiles..."
     if [[ $DRY_RUN -eq 1 ]]; then
-        info "[DRY-RUN] would back up existing ~/.config/hypr and ~/.config/waybar to $backup_dir"
-        info "[DRY-RUN] would copy dotfiles/hypr -> $HYPR_DIR, dotfiles/waybar -> $WAYBAR_DIR, dotfiles/easyeffects -> $EASYEFFECTS_DIR"
+        info "[DRY-RUN] would back up existing ~/.config/hypr to $backup_dir"
+        info "[DRY-RUN] would copy dotfiles/hypr -> $HYPR_DIR, dotfiles/easyeffects -> $EASYEFFECTS_DIR"
     else
         mkdir -p "$backup_dir"
         [[ -d "$HYPR_DIR" ]] && cp -r "$HYPR_DIR" "$backup_dir/hypr"
-        [[ -d "$WAYBAR_DIR" ]] && cp -r "$WAYBAR_DIR" "$backup_dir/waybar"
 
-        mkdir -p "$HYPR_DIR" "$WAYBAR_DIR" "$EASYEFFECTS_DIR"/{input,output,irs}
+        mkdir -p "$HYPR_DIR" "$EASYEFFECTS_DIR"/{input,output,irs}
         cp -r "$SCRIPT_DIR/dotfiles/hypr/." "$HYPR_DIR/"
-        cp -r "$SCRIPT_DIR/dotfiles/waybar/." "$WAYBAR_DIR/"
         cp "$SCRIPT_DIR/dotfiles/easyeffects/output/"*.json "$EASYEFFECTS_DIR/output/"
         cp "$SCRIPT_DIR/dotfiles/easyeffects/input/"*.json "$EASYEFFECTS_DIR/input/"
         cp "$SCRIPT_DIR/dotfiles/easyeffects/irs/"*.irs "$EASYEFFECTS_DIR/irs/"
-        chmod +x "$HYPR_DIR/scripts/"*.sh "$WAYBAR_DIR/scripts/"* 2>/dev/null || true
+        chmod +x "$HYPR_DIR/scripts/"*.sh 2>/dev/null || true
 
         info "Previous config backed up to $backup_dir"
     fi
@@ -72,7 +76,6 @@ phase4_run() {
     success "Sleep hook installed."
 
     if [[ $DRY_RUN -ne 1 ]]; then
-        info "Restart Hyprland (or log out/in) and Waybar to pick up the new config:"
-        info "  pkill waybar; hyprctl dispatch exec waybar"
+        info "Run 'hyprctl reload' to pick up the new Lua config (or log out/in)."
     fi
 }

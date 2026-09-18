@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Power Profile Status Script for Waybar
+# Power Profile Status Script for the Omarchy bar (type: "command" module)
 # Returns JSON with current power profile icon and tooltip
 #
 

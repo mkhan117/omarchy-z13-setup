@@ -115,24 +115,32 @@ stability fix for the MT7925E adapter, removes Omarchy's `soft-mixer`
 WirePlumber config (breaks headphone/speaker jack switching), initializes the
 speaker amp mixer, and enables HDMI audio auto-profile.
 
-**Phase 4 - Desktop dotfiles (Hyprland / Waybar / EasyEffects)**
+**Phase 4 - Desktop dotfiles (Hyprland / EasyEffects)**
 
-Deploys [`dotfiles/`](dotfiles/) — Z13-tuned Hyprland config (hy3 tiling,
+Deploys [`dotfiles/`](dotfiles/) — Z13-tuned Hyprland config (dwindle tiling,
 tablet/stylus mapping, brightness/backlight scripts, dictation, gaming
-keybinds), Waybar modules (profile switching, live PPT watts, thermals, idle
-lock, notifications, refresh-rate toggle — including the Performance Plus
-power modules wired up by Phase 5), and EasyEffects speaker/headphone/mic
-presets. This replaces `~/.config/hypr/*` and `~/.config/waybar/*` wholesale
-(backing up any existing config first — see the phase's output for the backup
-path), matching upstream z13flow's own install method. Also installs a
-systemd sleep hook that resets the ELAN touchpad after resume (fixes
-corrupted multi-touch state from an xHCI resume glitch), and a notification
-script for Fn+F5 platform-profile cycling.
+keybinds) as Lua modules (`bindings.lua`, `input.lua`, `looknfeel.lua`,
+`monitors.lua`, `autostart.lua`) under Omarchy's `require("hypr.*")` config
+system, and EasyEffects speaker/headphone/mic presets. This replaces
+`~/.config/hypr/*` wholesale (backing up any existing config first — see the
+phase's output for the backup path); Omarchy's own `hyprland.lua`,
+`hyprlock.conf`, `hyprsunset.conf`, `hypridle.conf`, and `xdph.conf` are left
+untouched. Also installs a systemd sleep hook that resets the ELAN touchpad
+after resume (fixes corrupted multi-touch state from an xHCI resume glitch),
+and a notification script for Fn+F5 platform-profile cycling.
 
-> `dotfiles/hypr/monitors.conf` ships with a generic single-panel default
-> (`monitor=eDP-1,preferred,auto,2`). If you use an external monitor, edit it
-> to match your own setup — the original z13flow author's specific external
-> display modes are preserved as commented examples, not applied by default.
+This repo targets **Omarchy 4.0.4+**, which replaced raw `hyprland.conf`
+sourcing with the Lua config system above, and replaced Waybar with its own
+Quickshell-based bar (`~/.config/omarchy/shell.json` +
+`~/.config/omarchy/plugins/`). hy3 tiling isn't supported either — hy3 isn't
+installed on 4.0.4 (`hyprpm` itself is gone), so bindings target Omarchy's
+default dwindle layout.
+
+> `dotfiles/hypr/monitors.lua` ships with a generic single-panel default
+> (`hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto",
+> scale = 2 })`). If you use an external monitor, edit it to match your own
+> setup — the original z13flow author's specific external display modes are
+> preserved as commented examples, not applied by default.
 
 **Phase 5 - Performance Plus (Power Management)**
 
@@ -141,8 +149,13 @@ Installs `ryzenadj` from the AUR, a global rate-limiting wrapper at
 [docs/z13flow/performance-plus.md](docs/z13flow/performance-plus.md) for why
 calling `ryzenadj` too rapidly can hang the machine), a suspend/resume hook, an
 AC-plug hook, the supporting udev rule and `tmpfiles.d` provisioning, and a
-sudoers rule for passwordless operation from Waybar/systemd/udev. The Waybar
-module deployed in Phase 4 cycles Quiet → Balanced → Performance → Ultra.
+sudoers rule for passwordless operation from the bar widget/systemd/udev.
+This phase also deploys the power-profile scripts to
+`~/.config/omarchy/bar/scripts/` and registers a `type: "command"` widget in
+`~/.config/omarchy/shell.json` that cycles Quiet → Balanced → Performance →
+Ultra on click (no Waybar, no QML — just the same JSON-stdout convention
+Waybar's `custom/` modules used). Run `omarchy restart shell` after phase 5 to
+pick it up.
 
 **Phase 6 - Gaming Mode + Tools (optional)**
 
@@ -214,7 +227,7 @@ lib/
   phase1_kernel.sh         G14 repo, linux-g14 kernel, ASUS tools
   phase2_asusd.sh          asusd service fix
   phase3_hardware.sh       Firmware, tablet utilities, Wi-Fi fix, audio fixes
-  phase4_dotfiles.sh       Hyprland/Waybar/EasyEffects dotfiles deployment
+  phase4_dotfiles.sh       Hyprland/EasyEffects dotfiles deployment
   phase5_performance_plus.sh  Performance Plus power management install
   phase6_gaming.sh         Gaming Mode + optional tools
   phase7_mirrors.sh        CachyOS mirror optimization
@@ -225,8 +238,8 @@ lib/
   phase12_audio_routing.sh     Audio sink priority routing
   phase13_hibernate_wake.sh    Hibernate wake fix (GPIO workaround)
 dotfiles/
-  hypr/                    Hyprland config deployed wholesale in Phase 4
-  waybar/                  Waybar config + scripts deployed wholesale in Phase 4
+  hypr/                    Hyprland Lua config deployed wholesale in Phase 4
+  omarchy-bar/             Power-profile bar widget scripts deployed by Phase 5
   easyeffects/             Speaker/headphone/mic EasyEffects presets
 performance-plus/
   ryzenadj-wrapper         Rate-limiting wrapper installed to ~/.local/bin/ryzenadj

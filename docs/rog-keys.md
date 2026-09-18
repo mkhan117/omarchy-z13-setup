@@ -11,35 +11,34 @@
 
 ## Keyboard Shortcuts
 
-Custom shortcuts added by this repo's `dotfiles/hypr/bindings.conf` (Phase 4),
-on top of Omarchy's own defaults. For window tiling / focus / hy3 group
-keybindings, see [docs/z13flow/hy3.md](z13flow/hy3.md) instead.
+Custom shortcuts added by this repo's `dotfiles/hypr/bindings.lua` (Phase 4),
+on top of Omarchy's own defaults (Omarchy 4.0.4+, dwindle tiling — hy3 isn't
+installed/supported here). Run `omarchy menu keybindings` for the full live
+list, including Omarchy's own defaults this repo doesn't override.
 
 | Shortcut | Action |
 |----------|--------|
-| Click the Waybar power-profile module | Cycle Quiet → Balanced → Performance → Ultra (Performance Plus) |
+| Click the power-profile bar widget | Cycle Quiet → Balanced → Performance → Ultra (Performance Plus) |
 | `Super+Shift+S` | Screenshot (firmware Fn+F6 also sends this) |
 | `Super+Shift+R` | ROG Control Center |
-| `Super+V` | Toggle virtual keyboard (tablet mode) |
+| `Super+V` | Toggle virtual keyboard (tablet mode) — overrides Omarchy's default Universal paste on this key |
 
 ### Apps & launching
 
 | Shortcut | Action |
 |----------|--------|
-| `Super+Alt+Return` | Terminal, opened as a tmux session |
-| `Super+Shift+Return` | Browser |
-| `Super+Shift+B` | Browser, new blank window |
-| `Super+Shift+Alt+B` | Browser, private window |
+| `Super+Shift+B` | Browser, new blank window — overrides Omarchy's default browser launch on this key |
 | `Alt+Shift+XF86TouchpadOff` (Copilot key) | Wayscriber |
 
 ### Window & workspace
 
 | Shortcut | Action |
 |----------|--------|
-| `Super+Shift+Space` | Toggle window mode: tile / float / sticky |
-| `Super+F` | Toggle fullscreen |
-| `Super+Shift+F` | Toggle Waybar (top bar) |
-| `Super+Equal` / `Super+Minus` | Grow / shrink active window |
+| `Super+Shift+Space` | Toggle window mode: tile / float / sticky — overrides Omarchy's default Toggle top bar on this key |
+| `Super+Shift+F` | Toggle top bar — overrides Omarchy's default File manager on this key |
+| `Super+J` / `Super+K` / `Super+L` / `Super+Semicolon` | Focus left / up / down / right (jkl;, one key right of vim hjkl) — overrides Omarchy's default window-split/workspace-layout toggles on J/L |
+| `Super+Shift+J` / `Super+Shift+K` / `Super+Shift+L` / `Super+Shift+Semicolon` | Swap window left / up / down / right |
+| `Super+Q` | Close window |
 | `Super+F2` | Rename current workspace (empty input reverts to number) |
 | `Super+F3` | Swap current workspace's position |
 | `XF86Launch3` (side button) | Toggle monitor mode (Double/External) — outside gaming mode |
@@ -82,7 +81,7 @@ keybindings, see [docs/z13flow/hy3.md](z13flow/hy3.md) instead.
 
 Power management is handled entirely by **Performance Plus** (phase 5) — see
 [docs/z13flow/performance-plus.md](z13flow/performance-plus.md) for the full
-design. The Waybar module cycles `Q -> B -> P -> U -> Q`, applying explicit
+design. The bar widget cycles `Q -> B -> P -> U -> Q`, applying explicit
 `ryzenadj` PPT limits and a Curve Optimizer undervolt per profile, on top of
 `power-profiles-daemon`.
 
@@ -94,10 +93,10 @@ design. The Waybar module cycles `Q -> B -> P -> U -> Q`, applying explicit
 | Ultra (`U`) | 120W | 120W | -15 (milder, for stability at high wattage) |
 
 The Armory Crate key (Fn+F5) also cycles the ACPI platform profile directly
-via asusd, independent of the Waybar module; `~/.local/bin/rog-profile-notify.sh`
+via asusd, independent of the bar widget; `~/.local/bin/rog-profile-notify.sh`
 shows a notification on each change and clears Ultra's state file if it fires
-while Ultra is active, so Waybar doesn't keep showing "Ultra" after you've
-manually switched away via the hardware key.
+while Ultra is active, so the bar widget doesn't keep showing "Ultra" after
+you've manually switched away via the hardware key.
 
 ### Check current profile
 

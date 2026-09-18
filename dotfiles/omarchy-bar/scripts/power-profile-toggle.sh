@@ -21,13 +21,14 @@
 # Q/B/P: stock power-profiles-daemon profiles, then debounced undervolt
 # U: full PPT, undervolt
 #
-# Every click advances the DESIRED profile immediately (waybar shows it via the
-# pending file). A single background worker applies the profile switch once
-# clicks settle (SETTLE_MS), then applies ryzenadj tuning TUNING_DELAY_MS after
-# the last click. Last click wins; ryzenadj is never called rapidly.
+# Every click advances the DESIRED profile immediately (the bar widget shows
+# it via the pending file, polling on a short interval — there's no push
+# refresh for a Quickshell `type: "command"` module). A single background
+# worker applies the profile switch once clicks settle (SETTLE_MS), then
+# applies ryzenadj tuning TUNING_DELAY_MS after the last click. Last click
+# wins; ryzenadj is never called rapidly.
 #
 STATE_FILE="${POWER_PROFILE_STATE_FILE:-/var/lib/performance-plus/active}"
-WAYBAR_SIGNAL=13
 
 RYZENADJ="$HOME/.local/bin/ryzenadj"
 SUDO="${SUDO:-sudo}"
@@ -51,10 +52,6 @@ power_profile_get() {
 
 power_profile_set() {
     python3.14 /usr/bin/powerprofilesctl set "$1" 2>/dev/null || powerprofilesctl set "$1"
-}
-
-signal_waybar() {
-    pkill -RTMIN+$WAYBAR_SIGNAL waybar 2>/dev/null || true
 }
 
 next_profile() {
@@ -170,7 +167,6 @@ run_worker() {
         desired=$(<"$PENDING")
 
         apply_profile "$desired"
-        signal_waybar
 
         # Wait out the tuning delay; more clicks extend it and change PENDING
         wait_for_deadline "$TUNING_DEADLINE"
@@ -206,5 +202,3 @@ printf '%s\n' "$(( NOW + SETTLE_MS ))" > "$SETTLE_DEADLINE"
 printf '%s\n' "$(( NOW + TUNING_DELAY_MS ))" > "$TUNING_DEADLINE"
 
 run_worker &
-
-signal_waybar

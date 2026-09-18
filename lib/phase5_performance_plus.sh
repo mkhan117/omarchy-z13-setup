@@ -2,9 +2,10 @@
 # Phase 5: Performance Plus — Power Management
 #
 # Installs the Ultra-mode power system: a global ryzenadj rate-limiting
-# wrapper, a Waybar Q/B/P/U toggle (deployed by phase4 as part of the
-# waybar dotfiles), and resume/AC hooks that reassert ryzenadj limits since
-# they don't survive suspend or a power-source change.
+# wrapper, an Omarchy bar Q/B/P/U toggle (a `type: "command"` widget in
+# ~/.config/omarchy/shell.json, deployed by this phase), and resume/AC hooks
+# that reassert ryzenadj limits since they don't survive suspend or a
+# power-source change.
 #
 # This is the ONLY power-limit-setting mechanism this repo installs. Do not
 # run this alongside another tool that also writes PPT/TDP limits directly
@@ -18,6 +19,8 @@ AC_HOOK="/usr/lib/performance-plus/ac-hook"
 UDEV_RULE="/etc/udev/rules.d/99-performance-plus-ac.rules"
 TMPFILES_CONF="/etc/tmpfiles.d/ryzenadj.conf"
 SUDOERS_FILE="/etc/sudoers.d/performance-plus"
+BAR_SCRIPTS_DIR="$HOME/.config/omarchy/bar/scripts"
+SHELL_JSON="$HOME/.config/omarchy/shell.json"
 
 phase5_check() {
     [[ -x "$RYZENADJ_WRAPPER" ]] \
@@ -26,6 +29,10 @@ phase5_check() {
         && [[ -f "$UDEV_RULE" ]] \
         && [[ -f "$TMPFILES_CONF" ]] \
         && [[ -f "$SUDOERS_FILE" ]] \
+        && [[ -x "$BAR_SCRIPTS_DIR/power-profile-toggle.sh" ]] \
+        && [[ -x "$BAR_SCRIPTS_DIR/power-profile-status.sh" ]] \
+        && [[ -f "$SHELL_JSON" ]] \
+        && jq -e '.bar.layout.right[]? | select(.id == "power-profile")' "$SHELL_JSON" >/dev/null 2>&1 \
         && is_pkg_installed ryzenadj
 }
 
@@ -121,7 +128,34 @@ phase5_run() {
     fi
     success "AC hook installed."
 
-    info "Performance Plus installed. The Waybar power-profile module (from phase 4)"
-    info "cycles Quiet -> Balanced -> Performance -> Ultra on click. See"
+    # 7. Omarchy bar widget — a `type: "command"` module (no Waybar, no QML
+    # needed) registered into ~/.config/omarchy/shell.json
+    info "Installing power-profile bar widget..."
+    if [[ $DRY_RUN -eq 1 ]]; then
+        info "[DRY-RUN] would install scripts to $BAR_SCRIPTS_DIR and register a"
+        info "[DRY-RUN] power-profile widget in $SHELL_JSON"
+    else
+        mkdir -p "$BAR_SCRIPTS_DIR"
+        cp "$SCRIPT_DIR/dotfiles/omarchy-bar/scripts/power-profile-toggle.sh" "$BAR_SCRIPTS_DIR/"
+        cp "$SCRIPT_DIR/dotfiles/omarchy-bar/scripts/power-profile-status.sh" "$BAR_SCRIPTS_DIR/"
+        chmod +x "$BAR_SCRIPTS_DIR/power-profile-toggle.sh" "$BAR_SCRIPTS_DIR/power-profile-status.sh"
+
+        mkdir -p "$(dirname "$SHELL_JSON")"
+        [[ -f "$SHELL_JSON" ]] || echo '{"version":1}' > "$SHELL_JSON"
+
+        local tmpfile
+        tmpfile=$(mktemp)
+        jq --arg exec "$BAR_SCRIPTS_DIR/power-profile-status.sh" \
+           --arg onClick "$BAR_SCRIPTS_DIR/power-profile-toggle.sh" \
+           '.bar //= {} | .bar.layout //= {} | .bar.layout.right //= [] |
+            .bar.layout.right = ([.bar.layout.right[] | select(.id != "power-profile")] +
+              [{id: "power-profile", type: "command", exec: $exec, interval: 1, onClick: $onClick}])' \
+           "$SHELL_JSON" > "$tmpfile" && mv "$tmpfile" "$SHELL_JSON"
+    fi
+    success "Bar widget installed."
+
+    info "Performance Plus installed. The Omarchy bar's power-profile widget (from"
+    info "this phase) cycles Quiet -> Balanced -> Performance -> Ultra on click."
+    info "Run 'omarchy restart shell' to pick it up. See"
     info "docs/z13flow/performance-plus.md for the full design and tuning rationale."
 }
