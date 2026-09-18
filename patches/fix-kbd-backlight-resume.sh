@@ -19,8 +19,8 @@ set -euo pipefail
 #
 # See: https://github.com/basecamp/omarchy/pull/5839
 
-KEYBOARD="$HOME/.local/share/omarchy/bin/omarchy-brightness-keyboard"
-LOCK="$HOME/.local/share/omarchy/bin/omarchy-system-lock"
+KEYBOARD="/usr/share/omarchy/bin/omarchy-brightness-keyboard"
+LOCK="/usr/share/omarchy/bin/omarchy-system-lock"
 
 patched=0
 
