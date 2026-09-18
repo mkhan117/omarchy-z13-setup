@@ -15,22 +15,22 @@ if [ -n "$cpu_temp" ] && [ -n "$gpu_temp" ]; then
     cpu_temp_int=$(printf "%.0f" "$cpu_temp")
     gpu_temp_int=$(printf "%.0f" "$gpu_temp")
 
-    # Determine CPU icon and color based on temperature
+    # Determine CPU icon based on temperature
     if [ "$cpu_temp_int" -ge 90 ]; then
-        cpu_icon="<span color='#ff4444'>󰸁</span>"  # Hot - red
+        cpu_icon="󰸁"  # Hot
     elif [ "$cpu_temp_int" -ge 80 ]; then
-        cpu_icon="<span color='#ffd700'>󱃃</span>"  # Warm - yellow
+        cpu_icon="󱃃"  # Warm
     elif [ "$cpu_temp_int" -ge 70 ]; then
         cpu_icon="󱃃"  # Warm
     else
         cpu_icon="󰔏"  # Cool
     fi
 
-    # Determine GPU icon color based on temperature
+    # Determine GPU icon based on temperature
     if [ "$gpu_temp_int" -ge 90 ]; then
-        gpu_icon="<span color='#ff4444'>󰾲</span>"  # Hot - red
+        gpu_icon="󰾲"  # Hot
     elif [ "$gpu_temp_int" -ge 80 ]; then
-        gpu_icon="<span color='#ffd700'>󰾲</span>"  # Warm - yellow
+        gpu_icon="󰾲"  # Warm
     else
         gpu_icon="󰾲"  # Normal
     fi

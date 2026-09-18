@@ -25,12 +25,12 @@ else
 fi
 
 if $ULTRA; then
-    ICON="<span color='#ffaa00'>⚡</span> (U)"
+    ICON="⚡ (U)"
     TOOLTIP="Power profile: Ultra (Performance Plus)\nRyzenAdj OC active - survives suspend"
 else
     case "$PROFILE" in
         performance)
-            ICON="<span color='#ff6666'>󰓅</span> (P)"
+            ICON="󰓅 (P)"
             TOOLTIP="Power profile: performance"
             ;;
         balanced)
@@ -38,7 +38,7 @@ else
             TOOLTIP="Power profile: balanced"
             ;;
         power-saver)
-            ICON="<span color='#6699ff'>󰾆</span> (Q)"
+            ICON="󰾆 (Q)"
             TOOLTIP="Power profile: power-saver"
             ;;
         *)
@@ -48,5 +48,5 @@ else
     esac
 fi
 
-# Return JSON for Waybar
+# Return JSON for the Omarchy bar's type: "command" module
 echo "{\"text\":\"$ICON\",\"tooltip\":\"$TOOLTIP\"}"
