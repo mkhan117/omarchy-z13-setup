@@ -125,8 +125,8 @@ Use eval." and `dispatch` demands a Lua-call expression instead (e.g.
 = {zoom_factor = 1.0}})'`). Any script that shells out to `hyprctl` for a
 window/workspace action must use this syntax now — see
 `scripts/toggle-window-mode.sh`, `scripts/rename-workspace.sh`,
-`scripts/swap-workspace.sh`, `scripts/zoom.sh`, and `hypridle.conf`'s `dpms`
-calls for examples. `/usr/share/hypr/stubs/hl.meta.lua` has the Lua API's
+`scripts/swap-workspace.sh`, and `scripts/zoom.sh` for examples.
+`/usr/share/hypr/stubs/hl.meta.lua` has the Lua API's
 type stubs if you need to find a dispatcher's field names. Note
 `hl.dsp.focus({window = addr})` only finds a window on the *currently
 visible* workspace — there's no more one-shot `movetoworkspacesilent

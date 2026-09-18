@@ -124,8 +124,10 @@ keybinds) as Lua modules (`bindings.lua`, `input.lua`, `looknfeel.lua`,
 system, and EasyEffects speaker/headphone/mic presets. This replaces
 `~/.config/hypr/*` wholesale (backing up any existing config first — see the
 phase's output for the backup path); Omarchy's own `hyprland.lua`,
-`hyprlock.conf`, `hyprsunset.conf`, `hypridle.conf`, and `xdph.conf` are left
-untouched. Also installs a systemd sleep hook that resets the ELAN touchpad
+`hyprlock.conf`, `hyprsunset.conf`, and `xdph.conf` are left untouched.
+`hypridle.conf` isn't shipped either — Omarchy 4.0.4 replaced hypridle with
+its own Quickshell-based idle/lock service (`hypridle` isn't even installed),
+so the old dotfile was dead config. Also installs a systemd sleep hook that resets the ELAN touchpad
 after resume (fixes corrupted multi-touch state from an xHCI resume glitch),
 a notification script for Fn+F5 platform-profile cycling, and CPU/memory/
 power-draw/temperature/screen-refresh-rate `type: "command"` bar widgets
