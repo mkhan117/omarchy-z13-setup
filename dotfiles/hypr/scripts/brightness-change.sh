@@ -20,11 +20,5 @@ brightnessctl set "$formatted"
 # Get the new brightness percentage
 brightness=$(brightnessctl -m | cut -d',' -f4 | tr -d '%')
 
-# Calculate progress for swayosd (0.0 to 1.0)
-progress=$(awk "BEGIN {printf \"%.2f\", $brightness / 100}")
-
 # Show OSD notification (use default brightness icon by using brightness command with absolute value)
 swayosd-client --brightness "$brightness"
-
-# Send signal to waybar to update
-pkill -RTMIN+10 waybar

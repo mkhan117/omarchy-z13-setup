@@ -92,32 +92,18 @@ hl.unbind("XF86KbdLightOnOff")
 o.bind("XF86KbdLightOnOff", "Toggle keyboard brightness", "~/.config/hypr/scripts/toggle-kbd-backlight.sh")
 o.bind("XF86Launch3", "Toggle monitor mode (Double/External)", "~/.config/hypr/scripts/toggle-monitors.sh")
 
--- Zoom (accessibility) — macOS-style system-wide zoom.
-o.bind(
-  "SUPER + ALT + EQUAL",
-  "Zoom in",
-  'hyprctl keyword cursor:zoom_rigid true && hyprctl keyword cursor:zoom_factor "$(hyprctl getoption cursor:zoom_factor -j | jq -r \'.float\' | awk \'{print ($1 < 3.0 ? $1 + 0.5 : 3.0)}\')"'
-)
-o.bind(
-  "SUPER + ALT + MINUS",
-  "Zoom out",
-  'hyprctl keyword cursor:zoom_rigid true && hyprctl keyword cursor:zoom_factor "$(hyprctl getoption cursor:zoom_factor -j | jq -r \'.float\' | awk \'{print ($1 > 1.0 ? $1 - 0.5 : 1.0)}\')"'
-)
-o.bind("SUPER + ALT + 0", "Reset zoom", "hyprctl keyword cursor:zoom_factor 1.0")
+-- Zoom (accessibility) — macOS-style system-wide zoom. `hyprctl keyword`
+-- doesn't work on this Hyprland version's Lua-native config parser, so the
+-- actual zoom_factor math/eval lives in scripts/zoom.sh (hyprctl eval).
+o.bind("SUPER + ALT + EQUAL", "Zoom in", "~/.config/hypr/scripts/zoom.sh in 0.5 3.0")
+o.bind("SUPER + ALT + MINUS", "Zoom out", "~/.config/hypr/scripts/zoom.sh out 0.5 1.0")
+o.bind("SUPER + ALT + 0", "Reset zoom", "~/.config/hypr/scripts/zoom.sh reset")
 
-o.bind(
-  "SUPER + CTRL + W",
-  "Zoom in",
-  'hyprctl keyword cursor:zoom_rigid true && hyprctl keyword cursor:zoom_factor "$(hyprctl getoption cursor:zoom_factor -j | jq -r \'.float\' | awk \'{print ($1 < 3.0 ? $1 + 1.0 : 6.0)}\')"'
-)
-o.bind(
-  "SUPER + CTRL + S",
-  "Zoom out",
-  'hyprctl keyword cursor:zoom_rigid true && hyprctl keyword cursor:zoom_factor "$(hyprctl getoption cursor:zoom_factor -j | jq -r \'.float\' | awk \'{print ($1 > 1.0 ? $1 - 1.0 : 1.0)}\')"'
-)
+o.bind("SUPER + CTRL + W", "Zoom in", "~/.config/hypr/scripts/zoom.sh in 1.0 6.0")
+o.bind("SUPER + CTRL + S", "Zoom out", "~/.config/hypr/scripts/zoom.sh out 1.0 1.0")
 -- Overrides Omarchy's default SUPER+CTRL+F ("Tiled full screen").
 hl.unbind("SUPER + CTRL + F")
-o.bind("SUPER + CTRL + F", "Reset zoom", "hyprctl keyword cursor:zoom_factor 1.0")
+o.bind("SUPER + CTRL + F", "Reset zoom", "~/.config/hypr/scripts/zoom.sh reset")
 
 -- Voice dictation - Super+D for live streaming
 o.bind("SUPER + D", "Voice dictation (toggle)", "~/.config/hypr/scripts/dictate.sh")

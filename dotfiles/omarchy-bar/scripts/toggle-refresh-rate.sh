@@ -27,8 +27,8 @@ else
     TARGET_REFRESH=180
 fi
 
-# Toggle refresh rate using hyprctl, preserving resolution, position, scale, and bit depth
-hyprctl keyword monitor "${MONITOR},${WIDTH}x${HEIGHT}@${TARGET_REFRESH},${POS_X}x${POS_Y},${SCALE},bitdepth,${BIT_DEPTH}"
-
-# Send signal to waybar to update (signal 10 for custom/screen)
-pkill -RTMIN+10 waybar
+# Toggle refresh rate, preserving resolution, position, scale, and bit depth.
+# hyprctl keyword doesn't work on this Hyprland version's Lua-native config
+# parser ("keyword can't work with non-legacy parsers") — hyprctl eval with
+# an hl.monitor() call is the replacement.
+hyprctl eval "hl.monitor({output='${MONITOR}', mode='${WIDTH}x${HEIGHT}@${TARGET_REFRESH}', position='${POS_X}x${POS_Y}', scale=${SCALE}, bitdepth=${BIT_DEPTH}})"

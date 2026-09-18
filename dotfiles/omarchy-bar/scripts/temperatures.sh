@@ -35,7 +35,7 @@ if [ -n "$cpu_temp" ] && [ -n "$gpu_temp" ]; then
         gpu_icon="󰾲"  # Normal
     fi
 
-    # Output JSON for waybar
+    # Output JSON for the Omarchy bar's type: "command" module
     echo "{\"text\":\"${cpu_icon} ${cpu_temp_int}°C ${gpu_icon} ${gpu_temp_int}°C\", \"tooltip\":\"CPU: ${cpu_temp_int}°C\\nGPU: ${gpu_temp_int}°C\", \"class\":\"temperature\"}"
 else
     echo "{\"text\":\"N/A\", \"tooltip\":\"Temperature sensors not available\"}"

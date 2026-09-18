@@ -127,7 +127,11 @@ phase's output for the backup path); Omarchy's own `hyprland.lua`,
 `hyprlock.conf`, `hyprsunset.conf`, `hypridle.conf`, and `xdph.conf` are left
 untouched. Also installs a systemd sleep hook that resets the ELAN touchpad
 after resume (fixes corrupted multi-touch state from an xHCI resume glitch),
-and a notification script for Fn+F5 platform-profile cycling.
+a notification script for Fn+F5 platform-profile cycling, and CPU/memory/
+power-draw/temperature/screen-refresh-rate `type: "command"` bar widgets
+(Omarchy's own defaults already cover network/audio/bluetooth/battery/clock/
+tray/workspaces/updates and the dictation/screen-recording/idle-lock/
+do-not-disturb indicators, so those aren't re-added).
 
 This repo targets **Omarchy 4.0.4+**, which replaced raw `hyprland.conf`
 sourcing with the Lua config system above, and replaced Waybar with its own
@@ -239,7 +243,7 @@ lib/
   phase13_hibernate_wake.sh    Hibernate wake fix (GPIO workaround)
 dotfiles/
   hypr/                    Hyprland Lua config deployed wholesale in Phase 4
-  omarchy-bar/             Power-profile bar widget scripts deployed by Phase 5
+  omarchy-bar/             Bar widget scripts (system stats, power-profile) deployed by Phases 4-5
   easyeffects/             Speaker/headphone/mic EasyEffects presets
 performance-plus/
   ryzenadj-wrapper         Rate-limiting wrapper installed to ~/.local/bin/ryzenadj

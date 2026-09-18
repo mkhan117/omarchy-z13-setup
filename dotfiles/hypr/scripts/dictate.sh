@@ -9,7 +9,6 @@ if [ -f "$PID_FILE" ]; then
     # STOP RECORDING
     kill -INT $(cat "$PID_FILE") 2>/dev/null
     rm -f "$PID_FILE"
-    pkill -RTMIN+11 waybar  # Update dictation indicator
     sleep 0.5
     
     # Check file
@@ -55,5 +54,4 @@ else
     
     ffmpeg -f pulse -i @DEFAULT_SOURCE@ -acodec pcm_s16le -ar 16000 -ac 1 -y "$AUDIO_FILE" </dev/null >/dev/null 2>&1 &
     echo $! > "$PID_FILE"
-    pkill -RTMIN+11 waybar  # Update dictation indicator
 fi
