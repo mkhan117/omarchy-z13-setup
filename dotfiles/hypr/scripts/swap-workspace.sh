@@ -36,7 +36,7 @@ for i in {1..10}; do
 done
 
 # Show menu
-selected=$(echo -e "$menu_options" | omarchy-launch-walker --dmenu --width 295 --minheight 1 --maxheight 400 -p "Swap workspace $current_id to position...")
+selected=$(echo -e "$menu_options" | omarchy-menu-select "Swap workspace $current_id to position..." -- --width 295 --maxheight 400)
 
 # Exit if nothing selected
 [[ -z "$selected" ]] && exit 0
