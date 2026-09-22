@@ -6,9 +6,25 @@
 
 STATE_FILE="/var/lib/performance-plus/active"
 PENDING="${XDG_RUNTIME_DIR:-/tmp}/power-profile-toggle/pending-profile"
+CACHE_FILE="${XDG_RUNTIME_DIR:-/tmp}/power-profile-toggle/cached-profile"
+CACHE_TTL=15  # seconds; avoids hitting powerprofilesctl (python3.14/PyGObject,
+              # prone to a rare upstream GDBus shutdown-race segfault) on every
+              # 1s bar tick when only this script's own toggle ever changes it
 
 power_profile_get() {
     powerprofilesctl get 2>/dev/null
+}
+
+cached_profile_get() {
+    if [[ -s "$CACHE_FILE" ]] && (( $(date +%s) - $(stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0) < CACHE_TTL )); then
+        cat "$CACHE_FILE"
+    else
+        local profile
+        profile=$(power_profile_get || echo "balanced")
+        mkdir -p "$(dirname "$CACHE_FILE")"
+        printf '%s' "$profile" > "$CACHE_FILE"
+        printf '%s' "$profile"
+    fi
 }
 
 PROFILE=""
@@ -20,7 +36,7 @@ if [[ -s "$PENDING" ]] && (( $(date +%s) - $(stat -c %Y "$PENDING" 2>/dev/null |
     PROFILE=$(<"$PENDING")
     [[ "$PROFILE" == "ultra" ]] && ULTRA=true
 else
-    PROFILE=$(power_profile_get || echo "balanced")
+    PROFILE=$(cached_profile_get)
     [[ -f "$STATE_FILE" ]] && ULTRA=true
 fi
 
