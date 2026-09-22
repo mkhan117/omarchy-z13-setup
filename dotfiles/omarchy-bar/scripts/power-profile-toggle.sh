@@ -47,11 +47,11 @@ now_ms() {
 }
 
 power_profile_get() {
-    python3.14 /usr/bin/powerprofilesctl get 2>/dev/null || powerprofilesctl get 2>/dev/null
+    powerprofilesctl get 2>/dev/null
 }
 
 power_profile_set() {
-    python3.14 /usr/bin/powerprofilesctl set "$1" 2>/dev/null || powerprofilesctl set "$1"
+    powerprofilesctl set "$1"
 }
 
 next_profile() {
