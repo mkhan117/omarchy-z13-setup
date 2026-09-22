@@ -8,7 +8,7 @@ STATE_FILE="/var/lib/performance-plus/active"
 PENDING="${XDG_RUNTIME_DIR:-/tmp}/power-profile-toggle/pending-profile"
 
 power_profile_get() {
-    python3.14 /usr/bin/powerprofilesctl get 2>/dev/null || powerprofilesctl get 2>/dev/null
+    powerprofilesctl get 2>/dev/null
 }
 
 PROFILE=""
