@@ -98,19 +98,19 @@ Updates keyrings and system packages via pacman.
 **Phase 1 - linux-g14 kernel and ASUS drivers**
 
 Adds the G14 (asus-linux.org) repository to pacman.conf, installs the
-`linux-g14` kernel and headers, and installs asusctl and rog-control-center.
+`linux-g14` kernel and headers, and installs rog-control-center. (`asusctl`
+itself is installed by Omarchy on every ROG machine.)
 
-**Phase 2 - asusd service fix**
+**Phase 2 - asusd N-KEY backlight fix**
 
-Creates a systemd drop-in to add the missing `[Install]` section to
-asusd.service, then enables and starts it. Also fixes the N-KEY device
-(`aura_18c6.ron`) overriding keyboard backlight to Off on boot.
+Fixes the N-KEY device (`aura_18c6.ron`) overriding keyboard backlight to Off
+on boot. (asusd no longer needs a systemd `[Install]` drop-in — asusctl 6.5
+starts it via its own udev rule.)
 
 **Phase 3 - Hardware support**
 
-Installs split firmware packages and marks them explicit (protects from
-Omarchy's orphan cleanup). Installs AUR packages for tablet support
-(`iio-hyprland-git`, `wvkbd-deskintl`) and `rofi-wayland`. Applies a Wi-Fi
+Installs AUR packages for tablet support (`iio-hyprland-git`,
+`wvkbd-deskintl`). Applies a Wi-Fi
 stability fix for the MT7925E adapter, removes Omarchy's `soft-mixer`
 WirePlumber config (breaks headphone/speaker jack switching), initializes the
 speaker amp mixer, and enables HDMI audio auto-profile.

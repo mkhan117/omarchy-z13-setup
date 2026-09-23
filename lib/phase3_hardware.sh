@@ -1,19 +1,13 @@
 #!/bin/bash
-# Phase 3: Hardware Support (Firmware, Tablet utils, Wi-Fi fix)
-
-# Critical firmware packages for ROG Z13 — must be explicitly installed
-# to survive omarchy's orphan package cleanup
-FIRMWARE_PKGS=(linux-firmware-amdgpu linux-firmware-mediatek linux-firmware-intel linux-firmware-whence linux-firmware-cirrus)
+# Phase 3: Hardware Support (Tablet utils, Wi-Fi fix, audio)
+#
+# Firmware is no longer handled here: Omarchy installs the linux-firmware
+# meta package explicitly, and it depends on every split firmware package
+# (amdgpu, mediatek, cirrus, ...), so none of them can become orphans.
 
 phase3_check() {
-    # Check firmware packages are installed AND explicitly marked
-    for pkg in "${FIRMWARE_PKGS[@]}"; do
-        is_pkg_installed "$pkg" && is_pkg_explicit "$pkg" || return 1
-    done
-    
     is_pkg_installed iio-hyprland-git \
         && is_pkg_installed wvkbd-deskintl \
-        && is_pkg_installed rofi-wayland \
         && [[ -f /etc/modprobe.d/mt7925e.conf ]] \
         && is_pkg_installed alsa-utils \
         && [[ ! -f ~/.config/wireplumber/wireplumber.conf.d/alsa-soft-mixer.conf ]] \
@@ -21,34 +15,6 @@ phase3_check() {
 }
 
 phase3_run() {
-    # Install any missing firmware packages
-    local missing_fw=()
-    for pkg in "${FIRMWARE_PKGS[@]}"; do
-        is_pkg_installed "$pkg" || missing_fw+=("$pkg")
-    done
-
-    if [[ ${#missing_fw[@]} -gt 0 ]]; then
-        info "Installing firmware packages: ${missing_fw[*]}..."
-        run_sudo pacman -S --noconfirm "${missing_fw[@]}"
-        success "Firmware packages installed."
-    else
-        success "Firmware packages already installed."
-    fi
-
-    # Mark ALL firmware as explicitly installed (protects from orphan cleanup)
-    # This is critical: omarchy-update-orphan-pkgs removes packages installed
-    # as dependencies if nothing requires them, which breaks WiFi and GPU
-    local needs_explicit=()
-    for pkg in "${FIRMWARE_PKGS[@]}"; do
-        is_pkg_explicit "$pkg" || needs_explicit+=("$pkg")
-    done
-
-    if [[ ${#needs_explicit[@]} -gt 0 ]]; then
-        info "Marking firmware as explicitly installed: ${needs_explicit[*]}..."
-        run_sudo pacman -D --asexplicit "${needs_explicit[@]}"
-        success "Firmware packages protected from orphan cleanup."
-    fi
-
     # Remove legacy linux-firmware-git if present (conflicts with split packages)
     if is_pkg_installed linux-firmware-git; then
         warn "linux-firmware-git is installed (obsolete — split packages are now used)."
@@ -79,7 +45,6 @@ phase3_run() {
     local aur_pkgs=()
     is_pkg_installed iio-hyprland-git || aur_pkgs+=(iio-hyprland-git)
     is_pkg_installed wvkbd-deskintl   || aur_pkgs+=(wvkbd-deskintl)
-    is_pkg_installed rofi-wayland     || aur_pkgs+=(rofi-wayland)
 
     if [[ ${#aur_pkgs[@]} -gt 0 ]]; then
         info "Installing AUR packages: ${aur_pkgs[*]}..."

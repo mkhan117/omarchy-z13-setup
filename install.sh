@@ -101,7 +101,7 @@ if [[ $NEEDS_REBOOT -eq 1 ]]; then
 fi
 
 # Phases 2–5 (no reboot needed)
-run_phase 2 "asusd Service Fix"       phase2_check phase2_run || true
+run_phase 2 "asusd N-KEY Backlight Fix" phase2_check phase2_run || true
 run_phase 3 "Hardware Support"         phase3_check phase3_run || true
 run_phase 4 "Desktop Dotfiles (Hyprland/Waybar/EasyEffects)" phase4_check phase4_run || true
 run_phase 5 "Performance Plus (Power Management)"            phase5_check phase5_run || true

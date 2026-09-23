@@ -1,5 +1,9 @@
 #!/bin/bash
-# Phase 1: Kernel & Drivers (G14 repo, linux-g14 kernel, ASUS tools)
+# Phase 1: Kernel & Drivers (G14 repo, linux-g14 kernel, ROG Control Center)
+#
+# asusctl itself isn't installed here: Omarchy installs it on every ROG
+# machine (install/hardware/asus-rog.sh). rog-control-center, the GUI, is
+# still ours to add.
 #
 # Uses linux-g14 (asus-linux.org) rather than the CachyOS kernel. This repo's
 # Performance Plus power system (phase5) was tuned and validated against
@@ -9,7 +13,6 @@
 phase1_check() {
     file_contains /etc/pacman.conf "[g14]" \
         && is_pkg_installed linux-g14 \
-        && is_pkg_installed asusctl \
         && is_pkg_installed rog-control-center
 }
 
@@ -53,14 +56,14 @@ phase1_run() {
         success "linux-g14 kernel already installed."
     fi
 
-    # 3. Install ASUS tools if not present
-    if ! is_pkg_installed asusctl || ! is_pkg_installed rog-control-center; then
-        info "Installing asusctl and rog-control-center..."
-        run_sudo pacman -S --noconfirm asusctl rog-control-center
+    # 3. Install ROG Control Center if not present
+    if ! is_pkg_installed rog-control-center; then
+        info "Installing rog-control-center..."
+        run_sudo pacman -S --noconfirm rog-control-center
         made_changes=true
-        success "ASUS tools installed."
+        success "rog-control-center installed."
     else
-        success "ASUS tools already installed."
+        success "rog-control-center already installed."
     fi
 
     if $made_changes; then
