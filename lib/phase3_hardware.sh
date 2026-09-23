@@ -5,13 +5,46 @@
 # meta package explicitly, and it depends on every split firmware package
 # (amdgpu, mediatek, cirrus, ...), so none of them can become orphans.
 
+# Internal mic volume ceiling. PipeWire folds the ALC294's "Internal Mic
+# Boost" (0/+10/+20/+30 dB) and "Capture" (up to +30 dB) into the one source
+# volume, so at 100% the mic runs +60 dB of hardware gain and clips before
+# anything downstream (EasyEffects FlowMic) sees it. At 30% the boost stage is
+# 0 dB and Capture is +28.5 dB — the level docs/z13flow/easyeffects-mic-setup.md
+# measured as clean. Setting it through PipeWire (not amixer + alsactl store,
+# as Omarchy's ALC285 fix does) matters: without Omarchy's soft-mixer,
+# WirePlumber re-applies the saved route volume to these controls on restore.
+MIC_MAX_VOLUME=30
+
+# Name of the PipeWire source for the ALC294's internal mic, if present
+z13_mic_source() {
+    local codec card
+    codec=$(grep -l "ALC294" /proc/asound/card*/codec#* 2>/dev/null | head -1)
+    [[ -n $codec ]] || return 1
+    card=$(echo "$codec" | grep -oP 'card\K\d+')
+    pactl -f json list sources 2>/dev/null \
+        | jq -r --arg card "$card" '.[] | select(.properties["alsa.card"] == $card and (.name | startswith("alsa_input."))) | .name' \
+        | head -1 | grep .
+}
+
+z13_mic_volume() {
+    pactl get-source-volume "$1" 2>/dev/null | grep -oP '\d+(?=%)' | head -1
+}
+
+z13_mic_ok() {
+    local source volume
+    source=$(z13_mic_source) || return 0  # not a Z13, or no audio server yet
+    volume=$(z13_mic_volume "$source")
+    [[ -n $volume ]] && (( volume <= MIC_MAX_VOLUME ))
+}
+
 phase3_check() {
     is_pkg_installed iio-hyprland-git \
         && is_pkg_installed wvkbd-deskintl \
         && [[ -f /etc/modprobe.d/mt7925e.conf ]] \
         && is_pkg_installed alsa-utils \
         && [[ ! -f ~/.config/wireplumber/wireplumber.conf.d/alsa-soft-mixer.conf ]] \
-        && [[ -f ~/.config/wireplumber/wireplumber.conf.d/hdmi-audio-autoactivate.conf ]]
+        && [[ -f ~/.config/wireplumber/wireplumber.conf.d/hdmi-audio-autoactivate.conf ]] \
+        && z13_mic_ok
 }
 
 phase3_run() {
@@ -93,6 +126,22 @@ phase3_run() {
         success "Speaker amp initialized."
     else
         warn "ALC294 codec not found — skipping mixer init"
+    fi
+
+    # Internal mic: drop the source volume so the ALC294's analog boost stage
+    # sits at 0 dB instead of +30 dB (see MIC_MAX_VOLUME above). WirePlumber
+    # saves this as the route volume, so it persists across reboots.
+    local mic_source
+    if mic_source=$(z13_mic_source); then
+        if ! z13_mic_ok; then
+            info "Lowering internal mic volume to ${MIC_MAX_VOLUME}% (stops ALC294 boost clipping)..."
+            run_cmd pactl set-source-volume "$mic_source" "${MIC_MAX_VOLUME}%"
+            success "Internal mic volume set to ${MIC_MAX_VOLUME}%."
+        else
+            success "Internal mic volume already at or below ${MIC_MAX_VOLUME}%."
+        fi
+    else
+        warn "ALC294 mic source not found in PipeWire — skipping mic level fix"
     fi
 
     # Note: this repo does not override Omarchy's default power-profile udev

@@ -4,6 +4,11 @@
 
 **Critical:** Set system mic input to **30%** before using EasyEffects.
 
+`install.sh` Phase 3 does this automatically, and Phase 14 installs
+EasyEffects and loads the FlowMic preset. On the Z13's ALC294, PipeWire folds
+`Internal Mic Boost` (0–30 dB) and `Capture` (up to +30 dB) into this one
+volume. At 30% the boost is 0 dB and Capture is +28.5 dB.
+
 ```bash
 wpctl set-volume @DEFAULT_SOURCE@ 0.30
 ```

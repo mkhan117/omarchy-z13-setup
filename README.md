@@ -89,7 +89,7 @@ ASUS-specific fan-curve and platform-profile patches.
 
 ## What it does
 
-The script runs thirteen phases in order:
+The script runs fourteen phases in order:
 
 **Phase 0 - System update**
 
@@ -113,7 +113,9 @@ Installs AUR packages for tablet support (`iio-hyprland-git`,
 `wvkbd-deskintl`). Applies a Wi-Fi
 stability fix for the MT7925E adapter, removes Omarchy's `soft-mixer`
 WirePlumber config (breaks headphone/speaker jack switching), initializes the
-speaker amp mixer, and enables HDMI audio auto-profile.
+speaker amp mixer, lowers the internal mic to 30% (at 100% PipeWire runs the
+ALC294's +30 dB analog boost and the mic clips), and enables HDMI audio
+auto-profile.
 
 **Phase 4 - Desktop dotfiles (Hyprland / EasyEffects)**
 
@@ -216,6 +218,14 @@ Adds a kernel parameter (via `limine-entry-tool`) to ignore AMD GPIO
 controller interrupt pins 2/3, preventing spurious hibernate wakes on
 Ryzen 7000+/Strix Halo. Requires a reboot.
 
+**Phase 14 - EasyEffects Speaker/Mic Presets**
+
+Installs EasyEffects and `lsp-plugins-lv2`, runs EasyEffects as a systemd
+user service (`--service-mode`, tied to the graphical session), and loads the
+Phase 4 presets: `IRZ13 Flow` on the speakers and `FlowMic` on the mic.
+Speakers and headphones are two ports on the same sink, so the speaker preset
+also applies to headphones until you set per-device autoload in EasyEffects.
+
 ## Custom Hyprland keybindings
 
 Phase 4 adds Z13-specific keybindings on top of Omarchy/z13flow's defaults —
@@ -230,9 +240,9 @@ lib/
   common.sh               Shared utilities (logging, prompts, checks, dry-run wrappers)
   phase_migrate.sh         Cleans up artifacts from a previous pre-merge-script install
   phase0_update.sh         System update
-  phase1_kernel.sh         G14 repo, linux-g14 kernel, ASUS tools
-  phase2_asusd.sh          asusd service fix
-  phase3_hardware.sh       Firmware, tablet utilities, Wi-Fi fix, audio fixes
+  phase1_kernel.sh         G14 repo, linux-g14 kernel, rog-control-center
+  phase2_asusd.sh          asusd N-KEY backlight fix
+  phase3_hardware.sh       Tablet utilities, Wi-Fi fix, audio + mic fixes
   phase4_dotfiles.sh       Hyprland/EasyEffects dotfiles deployment
   phase5_performance_plus.sh  Performance Plus power management install
   phase6_gaming.sh         Gaming Mode + optional tools
@@ -243,6 +253,7 @@ lib/
   phase11_controller_gaming.sh Controller gaming mode trigger
   phase12_audio_routing.sh     Audio sink priority routing
   phase13_hibernate_wake.sh    Hibernate wake fix (GPIO workaround)
+  phase14_easyeffects.sh       EasyEffects install, user service, preset loading
 dotfiles/
   hypr/                    Hyprland Lua config deployed wholesale in Phase 4
   omarchy-bar/             Bar widget scripts (system stats, power-profile) deployed by Phases 4-5
@@ -260,6 +271,7 @@ templates/
   99-thunderbolt-no-d3.rules  Thunderbolt dock udev rules for Phase 10
   controller-gaming-trigger.py   Gamepad combo listener for Phase 11
   controller-gaming-trigger.service  Systemd user service for Phase 11
+  easyeffects.service      EasyEffects systemd user service for Phase 14
   hibernate-wake-fix.sh    Standalone hibernate wake fix script
   patch-heroic-gamescope.sh    Heroic Gamescope compatibility patch
 scripts/
